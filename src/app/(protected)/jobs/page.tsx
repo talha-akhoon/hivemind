@@ -1,469 +1,572 @@
-"use client";
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import {
-    Plus,
-    Search,
-    Filter,
-    Clock,
-    DollarSign,
-    Database,
-    Target,
-    Cpu,
-    Zap,
-    ChevronDown,
-    ChevronRight,
-    AlertCircle,
-    CheckCircle,
-    PlayCircle,
-    XCircle,
-    Calendar,
-    User,
-    TrendingUp,
-    FileText,
-    Tag,
-    Info,
-    ExternalLink
-} from 'lucide-react';
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
+import {
+  Clock,
+  DollarSign,
+  Eye,
+  Filter,
+  Search,
+  Target,
+  TrendingUp,
+  Zap,
+  ChevronDown,
+  ChevronRight,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  Play,
+  User,
+  Database,
+  FileText,
+  Tag
+} from 'lucide-react';
 
-const JobsPage = () => {
-    const router = useRouter();
-    const [jobs, setJobs] = useState([]);
-    const [filteredJobs, setFilteredJobs] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [selectedTemplate, setSelectedTemplate] = useState('all');
-    const [selectedStatus, setSelectedStatus] = useState('all');
-    const [sortBy, setSortBy] = useState('newest');
-    const [showFilters, setShowFilters] = useState(false);
-    const [showEarningInfo, setShowEarningInfo] = useState(true);
+interface Job {
+  id: number;
+  title: string;
+  description?: string;
+  user_id: string;
+  dataset_id: number;
+  template: 'nlp' | 'sentiment' | 'ner' | 'custom';
+  custom_script_url?: string;
+  training_config: {
+    model_name: string;
+    num_labels: number;
+    data_format: string;
+    max_length: number;
+    val_split: number;
+    batch_size: number;
+    learning_rate: number;
+    epochs: number;
+    weight_decay: number;
+    max_grad_norm: number;
+    patience: number;
+    checkpoint_dir: string;
+  };
+  metric_type: string;
+  metric_threshold: number;
+  total_budget: number;
+  compute_budget: number;
+  protocol_fee: number;
+  status: 'active' | 'in_progress' | 'completed' | 'failed' | 'cancelled';
+  results?: {
+    final_metrics?: Record<string, number>;
+    model_url?: string;
+    logs_url?: string;
+    training_time?: number;
+    provider_id?: string;
+    submitted_at?: string;
+    meets_threshold?: boolean;
+  };
+  created_at: string;
+  updated_at: string;
+}
 
-    // Load jobs on component mount
-    useEffect(() => {
-        loadJobs();
-    }, []);
-
-    // Filter and sort jobs when filters change
-    useEffect(() => {
-        filterAndSortJobs();
-    }, [jobs, searchTerm, selectedTemplate, selectedStatus, sortBy]);
-
-    const loadJobs = async () => {
-        try {
-            setLoading(true);
-            const response = await fetch('/api/jobs');
-
-            if (response.ok) {
-                const jobsData = await response.json();
-                setJobs(jobsData);
-            } else {
-                console.error('Failed to load jobs');
-                setJobs([]);
-            }
-        } catch (error) {
-            console.error('Error loading jobs:', error);
-            setJobs([]);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const filterAndSortJobs = () => {
-        let filtered = [...jobs];
-
-        // Apply search filter
-        if (searchTerm) {
-            filtered = filtered.filter(job =>
-                job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                (job.description && job.description.toLowerCase().includes(searchTerm.toLowerCase()))
-            );
-        }
-
-        // Apply template filter
-        if (selectedTemplate !== 'all') {
-            filtered = filtered.filter(job => job.template === selectedTemplate);
-        }
-
-        // Apply status filter
-        if (selectedStatus !== 'all') {
-            filtered = filtered.filter(job => job.status === selectedStatus);
-        }
-
-        // Apply sorting
-        filtered.sort((a, b) => {
-            switch (sortBy) {
-                case 'newest':
-                    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-                case 'oldest':
-                    return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-                case 'budget_high':
-                    return b.total_budget - a.total_budget;
-                case 'budget_low':
-                    return a.total_budget - b.total_budget;
-                case 'title':
-                    return a.title.localeCompare(b.title);
-                default:
-                    return 0;
-            }
-        });
-
-        setFilteredJobs(filtered);
-    };
-
-    const getStatusIcon = (status) => {
-        switch (status) {
-            case 'active':
-                return <PlayCircle className="w-4 h-4 text-blue-600" />;
-            case 'in_progress':
-                return <TrendingUp className="w-4 h-4 text-indigo-600" />;
-            case 'completed':
-                return <CheckCircle className="w-4 h-4 text-green-600" />;
-            case 'failed':
-                return <XCircle className="w-4 h-4 text-red-600" />;
-            case 'cancelled':
-                return <AlertCircle className="w-4 h-4 text-gray-600" />;
-            default:
-                return <Clock className="w-4 h-4 text-gray-600" />;
-        }
-    };
-
-    const getStatusColor = (status) => {
-        switch (status) {
-            case 'active':
-                return 'bg-blue-100 text-blue-800 border-blue-200';
-            case 'in_progress':
-                return 'bg-indigo-100 text-indigo-800 border-indigo-200';
-            case 'completed':
-                return 'bg-green-100 text-green-800 border-green-200';
-            case 'failed':
-                return 'bg-red-100 text-red-800 border-red-200';
-            case 'cancelled':
-                return 'bg-gray-100 text-gray-800 border-gray-200';
-            default:
-                return 'bg-gray-100 text-gray-800 border-gray-200';
-        }
-    };
-
-    const getTemplateIcon = (template) => {
-        switch (template) {
-            case 'nlp':
-                return '📝';
-            case 'sentiment':
-                return '😊';
-            case 'ner':
-                return '🏷️';
-            case 'custom':
-                return '⚙️';
-            default:
-                return '📊';
-        }
-    };
-
-    const formatBudget = (budget) => {
-        if (budget >= 1000) {
-            return `${(budget / 1000).toFixed(1)}K`;
-        }
-        return budget.toString();
-    };
-
-    const formatTimeAgo = (dateString) => {
-        const date = new Date(dateString);
-        const now = new Date();
-        const diffMs = now.getTime() - date.getTime();
-        const diffMins = Math.floor(diffMs / (1000 * 60));
-        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-        if (diffMins < 60) {
-            return `${diffMins}m ago`;
-        } else if (diffHours < 24) {
-            return `${diffHours}h ago`;
-        } else {
-            return `${diffDays}d ago`;
-        }
-    };
-
-    const templates = [
-        { id: 'all', name: 'All Templates' },
-        { id: 'nlp', name: 'NLP/Text Classification' },
-        { id: 'sentiment', name: 'Sentiment Analysis' },
-        { id: 'ner', name: 'Named Entity Recognition' },
-        { id: 'custom', name: 'Custom Script' }
-    ];
-
-    const statuses = [
-        { id: 'all', name: 'All Statuses' },
-        { id: 'active', name: 'Active' },
-        { id: 'in_progress', name: 'In Progress' },
-        { id: 'completed', name: 'Completed' },
-        { id: 'failed', name: 'Failed' },
-        { id: 'cancelled', name: 'Cancelled' }
-    ];
-
-    const sortOptions = [
-        { id: 'newest', name: 'Newest First' },
-        { id: 'oldest', name: 'Oldest First' },
-        { id: 'budget_high', name: 'Highest Budget' },
-        { id: 'budget_low', name: 'Lowest Budget' },
-        { id: 'title', name: 'Title A-Z' }
-    ];
-
-    if (loading) {
-        return (
-            <div className="min-h-screen bg-gray-50 p-4 md:p-8">
-                <div className="max-w-7xl mx-auto">
-                    <div className="flex justify-center items-center py-20">
-                        <div className="text-center">
-                            <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                            <p className="text-gray-600">Loading jobs...</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
-    return (
-        <div className="min-h-screen bg-gray-50 text-gray-900 p-4 md:p-8">
-            <div className="max-w-7xl mx-auto">
-                {/* Earning Info Alert */}
-                {showEarningInfo && (
-                    <div className="bg-blue-50 border-l-4 border-blue-500 rounded-md p-4 mb-6 shadow-sm">
-                        <div className="flex">
-                            <div className="flex-shrink-0">
-                                <Info className="h-5 w-5 text-blue-500" aria-hidden="true" />
-                            </div>
-                            <div className="ml-3 flex-1">
-                                <div className="flex justify-between items-start">
-                                    <p className="text-sm text-blue-700 font-medium">
-                                        Want to earn HBAR by completing ML training jobs?
-                                    </p>
-                                    <button
-                                        type="button"
-                                        className="bg-blue-50 rounded-md text-blue-400 hover:text-blue-500 focus:outline-none"
-                                        onClick={() => setShowEarningInfo(false)}
-                                    >
-                                        <span className="sr-only">Dismiss</span>
-                                        <XCircle className="h-5 w-5" aria-hidden="true" />
-                                    </button>
-                                </div>
-                                <p className="text-sm text-blue-600 mt-1">
-                                    Install <span className="font-semibold">hivemind-cli</span> on your compute instance and put your feet up! Our agents will automatically find jobs and compete to complete them, earning you the bounty.
-                                </p>
-                                <div className="mt-2">
-                                    <Link
-                                        href="https://www.npmjs.com/package/hivemind-protocol-cli"
-                                        target="_blank"
-                                        className="text-sm font-medium text-blue-700 hover:text-blue-800 inline-flex items-center"
-                                    >
-                                        Learn more <ExternalLink className="ml-1 h-3.5 w-3.5" />
-                                    </Link>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* Header */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-                    <div>
-                        <h1 className="text-3xl font-bold text-black mb-2">
-                            ML Training Jobs
-                        </h1>
-                        <p className="text-gray-600 text-lg">
-                            Browse and manage machine learning training opportunities
-                        </p>
-                    </div>
-                    <button
-                        onClick={() => router.push('/jobs/create')}
-                        className="mt-4 md:mt-0 px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-indigo-500/25 transform hover:-translate-y-0.5 transition-all flex items-center gap-2"
-                    >
-                        <Plus className="w-5 h-5" />
-                        Post New Job
-                    </button>
-                </div>
-
-                {/* Search and Filters */}
-                <div className="bg-white border border-gray-200 rounded-2xl p-6 mb-8 shadow-sm">
-                    <div className="flex flex-col lg:flex-row gap-4">
-                        {/* Search */}
-                        <div className="flex-1 relative">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                            <input
-                                type="text"
-                                placeholder="Search jobs by title or description..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
-                            />
-                        </div>
-
-                        {/* Quick Filters */}
-                        <div className="flex gap-2">
-                            <select
-                                value={selectedTemplate}
-                                onChange={(e) => setSelectedTemplate(e.target.value)}
-                                className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500"
-                            >
-                                {templates.map(template => (
-                                    <option key={template.id} value={template.id}>
-                                        {template.name}
-                                    </option>
-                                ))}
-                            </select>
-
-                            <select
-                                value={selectedStatus}
-                                onChange={(e) => setSelectedStatus(e.target.value)}
-                                className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500"
-                            >
-                                {statuses.map(status => (
-                                    <option key={status.id} value={status.id}>
-                                        {status.name}
-                                    </option>
-                                ))}
-                            </select>
-
-                            <select
-                                value={sortBy}
-                                onChange={(e) => setSortBy(e.target.value)}
-                                className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500"
-                            >
-                                {sortOptions.map(option => (
-                                    <option key={option.id} value={option.id}>
-                                        {option.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Jobs Grid */}
-                {filteredJobs.length === 0 ? (
-                    <div className="text-center py-20">
-                        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <Database className="w-8 h-8 text-gray-400" />
-                        </div>
-                        <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                            {jobs.length === 0 ? 'No jobs available' : 'No jobs match your filters'}
-                        </h3>
-                        <p className="text-gray-600 mb-6">
-                            {jobs.length === 0
-                                ? 'Be the first to post a machine learning training job!'
-                                : 'Try adjusting your search criteria or filters.'
-                            }
-                        </p>
-                        {jobs.length === 0 && (
-                            <button
-                                onClick={() => router.push('/jobs/create')}
-                                className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-indigo-500/25 transform hover:-translate-y-0.5 transition-all"
-                            >
-                                Post Your First Job
-                            </button>
-                        )}
-                    </div>
-                ) : (
-                    <>
-                        {/* Results Summary */}
-                        <div className="mb-6 flex items-center justify-between">
-                            <p className="text-gray-600">
-                                Showing {filteredJobs.length} of {jobs.length} jobs
-                            </p>
-                        </div>
-
-                        {/* Jobs List */}
-                        <div className="grid gap-6">
-                            {filteredJobs.map((job) => (
-                                <div
-                                    key={job.id}
-                                    className="bg-white border border-gray-200 rounded-2xl p-6 hover:shadow-lg hover:border-indigo-300 transition-all cursor-pointer"
-                                    onClick={() => router.push(`/jobs/${job.id}`)}
-                                >
-                                    <div className="flex flex-col lg:flex-row lg:items-start gap-4">
-                                        {/* Main Content */}
-                                        <div className="flex-1">
-                                            <div className="flex items-start justify-between mb-3">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="text-2xl">
-                                                        {getTemplateIcon(job.template)}
-                                                    </div>
-                                                    <div>
-                                                        <h3 className="text-xl font-semibold text-gray-900 mb-1">
-                                                            {job.title}
-                                                        </h3>
-                                                        <div className="flex items-center gap-2 text-sm text-gray-500">
-                                                            <Calendar className="w-4 h-4" />
-                                                            <span>{formatTimeAgo(job.created_at)}</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className={`px-3 py-1 rounded-full border text-sm font-medium flex items-center gap-1 ${getStatusColor(job.status)}`}>
-                                                    {getStatusIcon(job.status)}
-                                                    <span className="capitalize">{job.status.replace('_', ' ')}</span>
-                                                </div>
-                                            </div>
-
-                                            {job.description && (
-                                                <p className="text-gray-600 mb-4 line-clamp-2">
-                                                    {job.description}
-                                                </p>
-                                            )}
-
-                                            {/* Job Details */}
-                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                                                <div className="flex items-center gap-2 text-sm text-gray-600">
-                                                    <DollarSign className="w-4 h-4 text-green-600" />
-                                                    <span>{formatBudget(job.total_budget)} HBAR</span>
-                                                </div>
-                                                <div className="flex items-center gap-2 text-sm text-gray-600">
-                                                    <Target className="w-4 h-4 text-blue-600" />
-                                                    <span>{job.metric_type} ≥ {job.metric_threshold}</span>
-                                                </div>
-                                                <div className="flex items-center gap-2 text-sm text-gray-600">
-                                                    <Cpu className="w-4 h-4 text-purple-600" />
-                                                    <span className="capitalize">{job.template}</span>
-                                                </div>
-                                            </div>
-
-                                            {/* Training Config Preview */}
-                                            {job.training_config && (
-                                                <div className="flex flex-wrap gap-2">
-                                                    <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
-                                                        {job.training_config.model_name}
-                                                    </span>
-                                                    <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
-                                                        {job.training_config.epochs} epochs
-                                                    </span>
-                                                    <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
-                                                        batch: {job.training_config.batch_size}
-                                                    </span>
-                                                    <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
-                                                        lr: {job.training_config.learning_rate}
-                                                    </span>
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        {/* Action Area */}
-                                        <div className="flex flex-col items-end gap-2 min-w-fit">
-                                            <div className="text-right">
-                                                <div className="text-2xl font-bold text-gray-900">
-                                                    {formatBudget(job.compute_budget)}
-                                                </div>
-                                                <div className="text-sm text-gray-500">HBAR reward</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </>
-                )}
-            </div>
-        </div>
-    );
+const statusConfig = {
+  active: { color: 'bg-green-100 text-green-800', icon: Play, label: 'Active' },
+  in_progress: { color: 'bg-blue-100 text-blue-800', icon: Clock, label: 'In Progress' },
+  completed: { color: 'bg-emerald-100 text-emerald-800', icon: CheckCircle, label: 'Completed' },
+  failed: { color: 'bg-red-100 text-red-800', icon: XCircle, label: 'Failed' },
+  cancelled: { color: 'bg-gray-100 text-gray-800', icon: AlertCircle, label: 'Cancelled' }
 };
 
-export default JobsPage;
+const templateConfig = {
+  nlp: { color: 'bg-purple-100 text-purple-800', label: 'NLP' },
+  sentiment: { color: 'bg-blue-100 text-blue-800', label: 'Sentiment Analysis' },
+  ner: { color: 'bg-orange-100 text-orange-800', label: 'Named Entity Recognition' },
+  custom: { color: 'bg-gray-100 text-gray-800', label: 'Custom' }
+};
+
+export default function JobsPage() {
+  const { user } = useAuth();
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [templateFilter, setTemplateFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('created_at');
+  const [sortOrder, setSortOrder] = useState('desc');
+  const [showFilters, setShowFilters] = useState(false);
+  const [expandedJobs, setExpandedJobs] = useState<Set<number>>(new Set());
+
+  useEffect(() => {
+    fetchJobs();
+  }, []);
+
+  const fetchJobs = async () => {
+    try {
+      const response = await fetch('/api/jobs');
+      if (response.ok) {
+        const data = await response.json();
+        setJobs(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch jobs:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filterAndSortJobs = () => {
+    let filtered = jobs.filter(job => {
+      const matchesSearch = job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           job.description?.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesStatus = statusFilter === 'all' || job.status === statusFilter;
+      const matchesTemplate = templateFilter === 'all' || job.template === templateFilter;
+
+      return matchesSearch && matchesStatus && matchesTemplate;
+    });
+
+    filtered.sort((a, b) => {
+      let aValue = a[sortBy as keyof Job];
+      let bValue = b[sortBy as keyof Job];
+
+      if (sortBy === 'total_budget') {
+        aValue = Number(aValue);
+        bValue = Number(bValue);
+      }
+
+      if (sortOrder === 'asc') {
+        return aValue < bValue ? -1 : 1;
+      } else {
+        return aValue > bValue ? -1 : 1;
+      }
+    });
+
+    return filtered;
+  };
+
+  const toggleJobExpansion = (jobId: number) => {
+    const newExpanded = new Set(expandedJobs);
+    if (newExpanded.has(jobId)) {
+      newExpanded.delete(jobId);
+    } else {
+      newExpanded.add(jobId);
+    }
+    setExpandedJobs(newExpanded);
+  };
+
+  const formatBudget = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(amount);
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const filteredJobs = filterAndSortJobs();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading jobs...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">AI Training Jobs</h1>
+              <p className="mt-2 text-gray-600">
+                Browse available machine learning training jobs on the HiveMind network
+              </p>
+            </div>
+            <div className="mt-4 sm:mt-0">
+              <Link
+                href="/jobs/create"
+                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+              >
+                <Zap className="w-4 h-4 mr-2" />
+                Create Job
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="p-5">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <Play className="h-6 w-6 text-green-600" />
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-sm font-medium text-gray-500 truncate">Active Jobs</dt>
+                    <dd className="text-lg font-medium text-gray-900">
+                      {jobs.filter(job => job.status === 'active').length}
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="p-5">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <Clock className="h-6 w-6 text-blue-600" />
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-sm font-medium text-gray-500 truncate">In Progress</dt>
+                    <dd className="text-lg font-medium text-gray-900">
+                      {jobs.filter(job => job.status === 'in_progress').length}
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="p-5">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <CheckCircle className="h-6 w-6 text-emerald-600" />
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-sm font-medium text-gray-500 truncate">Completed</dt>
+                    <dd className="text-lg font-medium text-gray-900">
+                      {jobs.filter(job => job.status === 'completed').length}
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="p-5">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <DollarSign className="h-6 w-6 text-purple-600" />
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-sm font-medium text-gray-500 truncate">Total Budget</dt>
+                    <dd className="text-lg font-medium text-gray-900">
+                      {formatBudget(jobs.reduce((sum, job) => sum + job.total_budget, 0))}
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Filters and Search */}
+        <div className="bg-white shadow rounded-lg mb-6">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <input
+                    type="text"
+                    placeholder="Search jobs..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <button
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                >
+                  <Filter className="w-4 h-4 mr-2" />
+                  Filters
+                  {showFilters ? <ChevronDown className="w-4 h-4 ml-1" /> : <ChevronRight className="w-4 h-4 ml-1" />}
+                </button>
+              </div>
+              <div className="mt-3 sm:mt-0">
+                <select
+                  value={`${sortBy}-${sortOrder}`}
+                  onChange={(e) => {
+                    const [field, order] = e.target.value.split('-');
+                    setSortBy(field);
+                    setSortOrder(order);
+                  }}
+                  className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="created_at-desc">Newest First</option>
+                  <option value="created_at-asc">Oldest First</option>
+                  <option value="total_budget-desc">Highest Budget</option>
+                  <option value="total_budget-asc">Lowest Budget</option>
+                  <option value="title-asc">Title A-Z</option>
+                  <option value="title-desc">Title Z-A</option>
+                </select>
+              </div>
+            </div>
+
+            {showFilters && (
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                    <select
+                      value={statusFilter}
+                      onChange={(e) => setStatusFilter(e.target.value)}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="all">All Status</option>
+                      <option value="active">Active</option>
+                      <option value="in_progress">In Progress</option>
+                      <option value="completed">Completed</option>
+                      <option value="failed">Failed</option>
+                      <option value="cancelled">Cancelled</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Template</label>
+                    <select
+                      value={templateFilter}
+                      onChange={(e) => setTemplateFilter(e.target.value)}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="all">All Templates</option>
+                      <option value="nlp">NLP</option>
+                      <option value="sentiment">Sentiment Analysis</option>
+                      <option value="ner">Named Entity Recognition</option>
+                      <option value="custom">Custom</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Jobs List */}
+        <div className="space-y-6">
+          {filteredJobs.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="w-24 h-24 mx-auto mb-4 text-gray-300">
+                <svg fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M13 13h8l-2 2-6-6-6 6-2-2h8z"/>
+                </svg>
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-1">No jobs found</h3>
+              <p className="text-gray-500">Try adjusting your search or filter criteria</p>
+            </div>
+          ) : (
+            filteredJobs.map((job) => {
+              const StatusIcon = statusConfig[job.status].icon;
+              const isExpanded = expandedJobs.has(job.id);
+              const isOwner = user?.id === job.user_id;
+
+              return (
+                <div key={job.id} className="bg-white shadow rounded-lg overflow-hidden">
+                  <div className="p-6">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center space-x-3 mb-2">
+                          <h3 className="text-lg font-medium text-gray-900 truncate">
+                            {job.title}
+                          </h3>
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusConfig[job.status].color}`}>
+                            <StatusIcon className="w-3 h-3 mr-1" />
+                            {statusConfig[job.status].label}
+                          </span>
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${templateConfig[job.template].color}`}>
+                            {templateConfig[job.template].label}
+                          </span>
+                          {isOwner && (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                              <User className="w-3 h-3 mr-1" />
+                              Your Job
+                            </span>
+                          )}
+                        </div>
+
+                        {job.description && (
+                          <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+                            {job.description}
+                          </p>
+                        )}
+
+                        <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
+                          <div className="flex items-center">
+                            <DollarSign className="w-4 h-4 mr-1" />
+                            Budget: {formatBudget(job.total_budget)}
+                          </div>
+                          <div className="flex items-center">
+                            <Target className="w-4 h-4 mr-1" />
+                            Target {job.metric_type}: {job.metric_threshold}
+                          </div>
+                          <div className="flex items-center">
+                            <Clock className="w-4 h-4 mr-1" />
+                            {formatDate(job.created_at)}
+                          </div>
+                          <div className="flex items-center">
+                            <Database className="w-4 h-4 mr-1" />
+                            Dataset ID: {job.dataset_id}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="ml-4 flex items-center space-x-2">
+                        {job.status === 'completed' && isOwner && (
+                          <Link
+                            href={`/api/jobs/${job.id}/model`}
+                            className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                          >
+                            <Eye className="w-4 h-4 mr-1" />
+                            Download Model
+                          </Link>
+                        )}
+                        <button
+                          onClick={() => toggleJobExpansion(job.id)}
+                          className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        >
+                          {isExpanded ? (
+                            <>
+                              Hide Details
+                              <ChevronDown className="ml-1 w-4 h-4" />
+                            </>
+                          ) : (
+                            <>
+                              Show Details
+                              <ChevronRight className="ml-1 w-4 h-4" />
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+
+                    {isExpanded && (
+                      <div className="mt-6 pt-6 border-t border-gray-200">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                          {/* Training Configuration */}
+                          <div>
+                            <h4 className="text-md font-medium text-gray-900 mb-3 flex items-center">
+                              <FileText className="w-4 h-4 mr-2" />
+                              Training Configuration
+                            </h4>
+                            <div className="bg-gray-50 rounded-lg p-4 space-y-2 text-sm">
+                              <div className="flex justify-between">
+                                <span className="text-gray-600">Model:</span>
+                                <span className="font-medium">{job.training_config.model_name}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-600">Labels:</span>
+                                <span className="font-medium">{job.training_config.num_labels}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-600">Max Length:</span>
+                                <span className="font-medium">{job.training_config.max_length}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-600">Batch Size:</span>
+                                <span className="font-medium">{job.training_config.batch_size}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-600">Learning Rate:</span>
+                                <span className="font-medium">{job.training_config.learning_rate}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-600">Epochs:</span>
+                                <span className="font-medium">{job.training_config.epochs}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Budget Breakdown */}
+                          <div>
+                            <h4 className="text-md font-medium text-gray-900 mb-3 flex items-center">
+                              <DollarSign className="w-4 h-4 mr-2" />
+                              Budget Breakdown
+                            </h4>
+                            <div className="bg-gray-50 rounded-lg p-4 space-y-2 text-sm">
+                              <div className="flex justify-between">
+                                <span className="text-gray-600">Total Budget:</span>
+                                <span className="font-medium">{formatBudget(job.total_budget)}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-600">Compute Budget:</span>
+                                <span className="font-medium">{formatBudget(job.compute_budget)}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-600">Protocol Fee (5%):</span>
+                                <span className="font-medium">{formatBudget(job.protocol_fee)}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Results (if available) */}
+                          {job.results && (job.results.final_metrics || job.results.training_time) && (
+                            <div className="lg:col-span-2">
+                              <h4 className="text-md font-medium text-gray-900 mb-3 flex items-center">
+                                <TrendingUp className="w-4 h-4 mr-2" />
+                                Training Results
+                              </h4>
+                              <div className="bg-gray-50 rounded-lg p-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                  {job.results.training_time && (
+                                    <div className="flex justify-between">
+                                      <span className="text-gray-600">Training Time:</span>
+                                      <span className="font-medium">{job.results.training_time}s</span>
+                                    </div>
+                                  )}
+                                  {job.results.final_metrics && Object.entries(job.results.final_metrics).map(([key, value]) => (
+                                    <div key={key} className="flex justify-between">
+                                      <span className="text-gray-600">{key}:</span>
+                                      <span className="font-medium">{typeof value === 'number' ? value.toFixed(4) : value}</span>
+                                    </div>
+                                  ))}
+                                  {job.results.meets_threshold !== undefined && (
+                                    <div className="flex justify-between">
+                                      <span className="text-gray-600">Meets Threshold:</span>
+                                      <span className={`font-medium ${job.results.meets_threshold ? 'text-green-600' : 'text-red-600'}`}>
+                                        {job.results.meets_threshold ? 'Yes' : 'No'}
+                                      </span>
+                                    </div>
+                                  )}
+                                  {job.results.provider_id && (
+                                    <div className="flex justify-between">
+                                      <span className="text-gray-600">Provider:</span>
+                                      <span className="font-medium font-mono text-xs">{job.results.provider_id}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
