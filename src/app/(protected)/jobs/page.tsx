@@ -21,8 +21,11 @@ import {
     User,
     TrendingUp,
     FileText,
-    Tag
+    Tag,
+    Info,
+    ExternalLink
 } from 'lucide-react';
+import Link from 'next/link';
 
 const JobsPage = () => {
     const router = useRouter();
@@ -34,6 +37,7 @@ const JobsPage = () => {
     const [selectedStatus, setSelectedStatus] = useState('all');
     const [sortBy, setSortBy] = useState('newest');
     const [showFilters, setShowFilters] = useState(false);
+    const [showEarningInfo, setShowEarningInfo] = useState(true);
 
     // Load jobs on component mount
     useEffect(() => {
@@ -223,6 +227,44 @@ const JobsPage = () => {
     return (
         <div className="min-h-screen bg-gray-50 text-gray-900 p-4 md:p-8">
             <div className="max-w-7xl mx-auto">
+                {/* Earning Info Alert */}
+                {showEarningInfo && (
+                    <div className="bg-blue-50 border-l-4 border-blue-500 rounded-md p-4 mb-6 shadow-sm">
+                        <div className="flex">
+                            <div className="flex-shrink-0">
+                                <Info className="h-5 w-5 text-blue-500" aria-hidden="true" />
+                            </div>
+                            <div className="ml-3 flex-1">
+                                <div className="flex justify-between items-start">
+                                    <p className="text-sm text-blue-700 font-medium">
+                                        Want to earn HBAR by completing ML training jobs?
+                                    </p>
+                                    <button
+                                        type="button"
+                                        className="bg-blue-50 rounded-md text-blue-400 hover:text-blue-500 focus:outline-none"
+                                        onClick={() => setShowEarningInfo(false)}
+                                    >
+                                        <span className="sr-only">Dismiss</span>
+                                        <XCircle className="h-5 w-5" aria-hidden="true" />
+                                    </button>
+                                </div>
+                                <p className="text-sm text-blue-600 mt-1">
+                                    Install <span className="font-semibold">hivemind-cli</span> on your compute instance and put your feet up! Our agents will automatically find jobs and compete to complete them, earning you the bounty.
+                                </p>
+                                <div className="mt-2">
+                                    <Link
+                                        href="https://www.npmjs.com/package/hivemind-protocol-cli"
+                                        target="_blank"
+                                        className="text-sm font-medium text-blue-700 hover:text-blue-800 inline-flex items-center"
+                                    >
+                                        Learn more <ExternalLink className="ml-1 h-3.5 w-3.5" />
+                                    </Link>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
                     <div>

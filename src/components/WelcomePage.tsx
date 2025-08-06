@@ -5,6 +5,7 @@ import * as THREE from 'three'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { OrbitControls, Sphere } from '@react-three/drei'
 import Link from "next/link";
+import {useRouter} from "next/navigation";
 
 interface WelcomePageProps {
   showDashboardButton?: boolean
@@ -119,7 +120,7 @@ export default function HiveMindLanding({ showDashboardButton }: WelcomePageProp
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
-
+  const router = useRouter();
   const handleLogin = () => {
     router.push('/login')
   }
@@ -338,37 +339,127 @@ export default function HiveMindLanding({ showDashboardButton }: WelcomePageProp
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-4xl font-bold text-gray-900 mb-4">How It Works</h2>
-              <p className="text-xl text-gray-600">Simple steps to get started</p>
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                HiveMinds connects idle compute resources with AI researchers through a transparent, secure blockchain marketplace
+              </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 text-white font-bold text-xl">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {/* Step 1: Connect Wallet */}
+              <div className="bg-white rounded-xl p-6 shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
+                <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 text-white font-bold text-xl shadow-lg">
                   1
                 </div>
-                <h3 className="text-lg font-semibold mb-2">Connect Wallet</h3>
-                <p className="text-gray-600">Link your Hedera wallet to get started</p>
+                <h3 className="text-xl font-semibold mb-3 text-center">Connect Wallet</h3>
+                <p className="text-gray-600 text-center mb-4">Link your HashPack wallet to access the HiveMinds ecosystem securely</p>
+                <div className="flex justify-center">
+                  <svg className="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                </div>
               </div>
-              <div className="text-center">
-                <div className="w-16 h-16 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-4 text-white font-bold text-xl">
+
+              {/* Step 2: Browse & Choose */}
+              <div className="bg-white rounded-xl p-6 shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
+                <div className="w-16 h-16 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-6 text-white font-bold text-xl shadow-lg">
                   2
                 </div>
-                <h3 className="text-lg font-semibold mb-2">Browse Resources</h3>
-                <p className="text-gray-600">Find the perfect GPU for your needs</p>
+                <h3 className="text-xl font-semibold mb-3 text-center">Submit or Earn</h3>
+                <p className="text-gray-600 text-center mb-4">Post ML training jobs or provide your compute resources to earn HBAR</p>
+                <div className="flex justify-center">
+                  <svg className="w-10 h-10 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                </div>
               </div>
-              <div className="text-center">
-                <div className="w-16 h-16 bg-gradient-to-r from-pink-600 to-red-600 rounded-full flex items-center justify-center mx-auto mb-4 text-white font-bold text-xl">
+
+              {/* Step 3: Deploy & Train */}
+              <div className="bg-white rounded-xl p-6 shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
+                <div className="w-16 h-16 bg-gradient-to-r from-pink-600 to-red-600 rounded-full flex items-center justify-center mx-auto mb-6 text-white font-bold text-xl shadow-lg">
                   3
                 </div>
-                <h3 className="text-lg font-semibold mb-2">Deploy Model</h3>
-                <p className="text-gray-600">Upload and start training instantly</p>
+                <h3 className="text-xl font-semibold mb-3 text-center">Automatic Matching</h3>
+                <p className="text-gray-600 text-center mb-4">Our smart agents find and complete jobs autonomously using your compute power</p>
+                <div className="flex justify-center">
+                  <svg className="w-10 h-10 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </div>
               </div>
-              <div className="text-center">
-                <div className="w-16 h-16 bg-gradient-to-r from-green-600 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-white font-bold text-xl">
+
+              {/* Step 4: Monitor & Scale */}
+              <div className="bg-white rounded-xl p-6 shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
+                <div className="w-16 h-16 bg-gradient-to-r from-green-600 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 text-white font-bold text-xl shadow-lg">
                   4
                 </div>
-                <h3 className="text-lg font-semibold mb-2">Monitor & Scale</h3>
-                <p className="text-gray-600">Track progress and scale as needed</p>
+                <h3 className="text-xl font-semibold mb-3 text-center">Collect Rewards</h3>
+                <p className="text-gray-600 text-center mb-4">Get paid automatically in HBAR when jobs complete successfully</p>
+                <div className="flex justify-center">
+                  <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M4.574 4.8l-1.44 1.44m18.332 18.332l-1.44-1.44m-16.892 0l-1.44 1.44M20.064 6.24l-1.44-1.44" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            {/* Additional explanation */}
+            <div className="mt-16 bg-white rounded-xl p-8 shadow-md">
+              <h3 className="text-2xl font-semibold mb-4 text-center">For Compute Providers</h3>
+              <div className="flex flex-col md:flex-row gap-8 items-center">
+                <div className="flex-1">
+                  <div className="prose prose-blue max-w-none">
+                    <ol className="space-y-4">
+                      <li className="flex items-start">
+                        <span className="bg-blue-100 text-blue-700 rounded-full w-6 h-6 flex items-center justify-center mr-3 mt-0.5 font-semibold">1</span>
+                        <span><strong className="text-gray-900">Install hivemind-cli</strong> on your compute instance with a simple npm installation</span>
+                      </li>
+                      <li className="flex items-start">
+                        <span className="bg-blue-100 text-blue-700 rounded-full w-6 h-6 flex items-center justify-center mr-3 mt-0.5 font-semibold">2</span>
+                        <span><strong className="text-gray-900">Connect your wallet</strong> to securely receive payments for completed jobs</span>
+                      </li>
+                      <li className="flex items-start">
+                        <span className="bg-blue-100 text-blue-700 rounded-full w-6 h-6 flex items-center justify-center mr-3 mt-0.5 font-semibold">3</span>
+                        <span><strong className="text-gray-900">Relax</strong> while our agents automatically find and complete jobs on the marketplace</span>
+                      </li>
+                      <li className="flex items-start">
+                        <span className="bg-blue-100 text-blue-700 rounded-full w-6 h-6 flex items-center justify-center mr-3 mt-0.5 font-semibold">4</span>
+                        <span><strong className="text-gray-900">Earn HBAR</strong> automatically deposited to your wallet as jobs complete</span>
+                      </li>
+                    </ol>
+                  </div>
+                  <div className="mt-6 text-center md:text-left">
+                    <a
+                      href="https://www.npmjs.com/package/hivemind-protocol-cli"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center px-5 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all"
+                    >
+                      Get Started with hivemind-cli
+                      <svg className="ml-2 -mr-1 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+                <div className="flex-1 flex justify-center">
+                  <div className="bg-gray-900 rounded-lg p-4 max-w-md w-full">
+                    <div className="flex items-center space-x-2 mb-3">
+                      <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                      <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                      <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                      <div className="text-xs text-gray-400 ml-2">Terminal</div>
+                    </div>
+                    <div className="font-mono text-sm text-green-400 bg-gray-900">
+                      <p className="mb-1">$ npm install -g hivemind-protocol-cli</p>
+                      <p className="mb-1">$ hivemind-cli init</p>
+                      <p className="mb-1">{'>'} Enter your wallet address: 0x72f...</p>
+                      <p className="mb-1">{'>'} Setting up compute agent...</p>
+                      <p className="mb-1">{'>'} Connected to HiveMinds network!</p>
+                      <p className="mb-1">{'>'} Finding jobs....</p>
+                      <p className="text-blue-400">Agent running... sit back and earn!</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -491,3 +582,4 @@ export default function HiveMindLanding({ showDashboardButton }: WelcomePageProp
       </div>
   )
 }
+
