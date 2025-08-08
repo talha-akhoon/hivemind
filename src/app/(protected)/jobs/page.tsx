@@ -21,7 +21,8 @@ import {
   User,
   Database,
   FileText,
-  Tag
+  ExternalLink,
+  Cpu
 } from 'lucide-react';
 
 interface Job {
@@ -201,6 +202,40 @@ export default function JobsPage() {
                 <Zap className="w-4 h-4 mr-2" />
                 Create Job
               </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Info Alert Box */}
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6 mb-6">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <Cpu className="h-6 w-6 text-blue-600" />
+            </div>
+            <div className="ml-4 flex-1">
+              <h3 className="text-lg font-medium text-blue-900 mb-2">
+                💰 Earn Money with Your Spare GPU!
+              </h3>
+              <p className="text-sm text-blue-800 mb-3">
+                Introducing the <strong>HiveMind Protocol CLI</strong> - a smart solution that uses AI agents to automatically determine whether ML training jobs will be profitable for your compute instance. Just install it and let it work while you earn!
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <a
+                  href="https://www.npmjs.com/package/hivemind-protocol-cli"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors"
+                >
+                  <ExternalLink className="w-4 h-4 mr-2" />
+                  Install via NPM
+                </a>
+                <span className="text-xs text-blue-700 self-center">
+                  npm install -g hivemind-protocol-cli
+                </span>
+              </div>
+              <p className="text-xs text-blue-600 mt-2">
+                🚀 Set up once, earn passively - the CLI handles profitable job selection automatically!
+              </p>
             </div>
           </div>
         </div>
