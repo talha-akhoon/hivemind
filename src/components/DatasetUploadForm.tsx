@@ -73,7 +73,7 @@ export default function DatasetUploadForm() {
                     license: '',
                     price: '',
                     tags: '',
-                    owner_wallet: walletData?.accountId || '',
+                    owner_wallet: accountId || '',
                     train_file: null,
                     test_file: null,
                     additional_files: null,
