@@ -421,9 +421,11 @@ export default function JobsPage() {
                     <div className="flex items-start justify-between">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center space-x-3 mb-2">
-                          <h3 className="text-lg font-medium text-gray-900 truncate">
-                            {job.title}
-                          </h3>
+                          <Link href={`/jobs/${job.id}`}>
+                            <h3 className="text-lg font-medium text-gray-900 truncate hover:text-blue-600 transition-colors hover:underline">
+                              {job.title}
+                            </h3>
+                          </Link>
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusConfig[job.status].color}`}>
                             <StatusIcon className="w-3 h-3 mr-1" />
                             {statusConfig[job.status].label}
